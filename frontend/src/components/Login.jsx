@@ -201,11 +201,6 @@ const Login = () => {
           </div>
         </form>
 
-        <div className="login-auth-demo">
-          <p className="login-auth-demo-title">Demo Credentials:</p>
-          <p className="login-auth-demo-text">Email: demo@careerguide.com</p>
-          <p className="login-auth-demo-text">Password: demo123</p>
-        </div>
       </div>
     </div>
   );
