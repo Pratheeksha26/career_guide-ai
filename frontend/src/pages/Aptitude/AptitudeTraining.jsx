@@ -14,7 +14,7 @@ const AptitudeTraining = () => {
     const [timer, setTimer] = useState(60);
     const [isTestActive, setIsTestActive] = useState(false);
 
-    const API_BASE = '';
+    const API_BASE = process.env.REACT_APP_API_URL || '';
 
     const topics = [
         { id: 'Quantitative', name: 'Quantitative Aptitude', icon: '🧮' },

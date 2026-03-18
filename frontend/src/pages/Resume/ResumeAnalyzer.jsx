@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../../api/axiosConfig';
 import { FaCloudUploadAlt, FaCheckCircle, FaExclamationTriangle, FaLightbulb } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 
@@ -31,7 +31,7 @@ const ResumeAnalyzer = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post('/api/resume/analyze', formData, {
+            const response = await axios.post('/resume/analyze', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`
