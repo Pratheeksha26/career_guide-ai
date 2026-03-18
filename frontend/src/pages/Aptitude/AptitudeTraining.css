@@ -1,0 +1,435 @@
+/* AptitudeTraining.css (Earthy Theme)
+   ================================ */
+
+.apt-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.apt-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.apt-title {
+    font-family: 'Lora', serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.apt-subtitle {
+    font-size: 1.3rem;
+    color: var(--slate-600);
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+}
+
+.apt-content {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    border: 1px solid rgba(74, 93, 78, 0.1);
+    box-shadow: var(--shadow-md);
+}
+
+.apt-section {
+    margin-bottom: 4rem;
+}
+
+.apt-section-title {
+    font-family: 'Lora', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--umber);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.apt-section-title::after {
+    content: '';
+    flex: 1;
+    height: 3px;
+    background: var(--ecru);
+    border-radius: var(--radius-full);
+}
+
+.apt-topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.apt-topic-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    background: var(--ecru);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--slate-700);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: 'Lora', serif;
+}
+
+.apt-topic-btn:hover {
+    background: var(--white);
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-sm);
+    color: var(--primary);
+}
+
+.apt-topic-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: var(--shadow);
+    transform: translateY(-4px);
+}
+
+.apt-topic-icon {
+    font-size: 2.5rem;
+}
+
+.apt-difficulty-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.apt-diff-btn {
+    padding: 0.85rem 3rem;
+    background: var(--ecru);
+    border: 2px solid transparent;
+    border-radius: var(--radius-full);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--slate-700);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.apt-diff-btn:hover {
+    background: var(--stone);
+    color: var(--umber);
+}
+
+.apt-diff-btn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: var(--shadow);
+}
+
+.apt-practice-area {
+    margin-top: 5rem;
+}
+
+.apt-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.apt-stat {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2.5rem;
+    background: var(--ecru);
+    border-radius: var(--radius-lg);
+    min-width: 220px;
+    border: 1px solid rgba(74, 93, 78, 0.05);
+    box-shadow: var(--shadow-sm);
+}
+
+.apt-stat-icon {
+    font-size: 2.2rem;
+    color: var(--primary);
+}
+
+.apt-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.apt-stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--umber);
+    line-height: 1;
+}
+
+.apt-stat-label {
+    font-size: 0.95rem;
+    color: var(--slate-600);
+    margin-top: 0.4rem;
+    font-weight: 600;
+}
+
+.apt-question-card {
+    background: var(--white);
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(74, 93, 78, 0.1);
+    margin-bottom: 3rem;
+    box-shadow: var(--shadow);
+}
+
+.apt-q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 2px solid var(--ecru);
+}
+
+.apt-timer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(188, 108, 37, 0.1);
+    color: var(--accent);
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.apt-q-text {
+    font-family: 'Lora', serif;
+    font-size: 1.5rem;
+    color: var(--umber);
+    margin-bottom: 3rem;
+    line-height: 1.6;
+    font-weight: 600;
+}
+
+.apt-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+}
+
+.apt-option {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: var(--ecru);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.apt-option:hover {
+    background: var(--white);
+    border-color: var(--stone);
+}
+
+.apt-option input[type="radio"] {
+    width: 24px;
+    height: 24px;
+    accent-color: var(--primary);
+}
+
+.apt-option span {
+    font-size: 1.2rem;
+    color: var(--umber);
+    font-weight: 500;
+}
+
+.apt-actions {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.apt-submit-btn, .apt-next-btn {
+    flex: 1;
+    padding: 1.25rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    font-family: inherit;
+}
+
+.apt-submit-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.apt-submit-btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.apt-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.apt-next-btn {
+    background: var(--accent);
+    color: white;
+}
+
+.apt-next-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.apt-explanation {
+    margin-top: 3rem;
+    padding: 2.5rem;
+    background: rgba(74, 93, 78, 0.05);
+    border-radius: var(--radius-lg);
+    border-left: 6px solid var(--primary);
+}
+
+.apt-explanation h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.3rem;
+    font-family: 'Lora', serif;
+}
+
+.apt-explanation p {
+    margin-bottom: 0;
+    line-height: 1.7;
+    color: var(--slate-700);
+    font-size: 1.1rem;
+}
+
+.apt-start-card {
+    text-align: center;
+    padding: 6rem 3rem;
+    background: var(--ecru);
+    border-radius: var(--radius-lg);
+    border: 3px dashed var(--stone);
+}
+
+.apt-start-icon {
+    font-size: 5rem;
+    color: var(--primary);
+    margin-bottom: 2.5rem;
+}
+
+.apt-start-btn {
+    margin-top: 3rem;
+    padding: 1.5rem 5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.3rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.apt-start-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    background: var(--primary-hover);
+}
+
+.apt-mock-section {
+    text-align: center;
+    padding: 3rem;
+    background: var(--stone);
+    border-radius: var(--radius-lg);
+    margin-top: 4rem;
+}
+
+.apt-mock-btn {
+    margin-top: 1.5rem;
+    padding: 1.25rem 4rem;
+    background: var(--sienna);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.25rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.apt-mock-btn:hover {
+    background: var(--secondary-hover);
+    transform: translateY(-2px);
+}
+
+.apt-tips-area {
+    margin-top: 6rem;
+}
+
+.apt-tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
+}
+
+.apt-tip-card {
+    padding: 2.5rem;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(74, 93, 78, 0.1);
+    box-shadow: var(--shadow-sm);
+}
+
+.apt-tip-card h4 {
+    font-family: 'Lora', serif;
+    font-size: 1.5rem;
+    color: var(--umber);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.apt-tip-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.apt-tip-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--ecru);
+    color: var(--slate-600);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.apt-tip-item:last-child {
+    border-bottom: none;
+}

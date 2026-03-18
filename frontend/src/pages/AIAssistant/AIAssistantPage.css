@@ -1,0 +1,205 @@
+/* AIAssistantPage.css (Earthy Theme)
+   ================================ */
+
+.aip-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.aip-container-fluid {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.aip-chat-wrapper {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Info section */
+.aip-info {
+  margin: 4rem 0;
+  padding: 3rem;
+  background: var(--ecru);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(74, 93, 78, 0.1);
+}
+
+.aip-info-title {
+  font-family: 'Lora', serif;
+  font-size: 2.22rem;
+  font-weight: 800;
+  color: var(--umber);
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.aip-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.5rem;
+}
+
+.aip-info-card {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(74, 93, 78, 0.05);
+  box-shadow: var(--shadow-sm);
+}
+
+.aip-info-card h4 {
+  margin: 0 0 1.25rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Lora', serif;
+}
+
+.aip-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.aip-info-list li {
+  font-size: 1rem;
+  color: var(--slate-600);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.aip-info-list li::before {
+  content: '✓';
+  color: var(--primary);
+  font-weight: 800;
+}
+
+/* Examples section */
+.aip-examples {
+  margin-top: 5rem;
+  padding: 4rem;
+  background: var(--stone);
+  border-radius: var(--radius-lg);
+}
+
+.aip-examples-title {
+  font-family: 'Lora', serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--umber);
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.aip-examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2.5rem;
+}
+
+.aip-example-card {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(74, 93, 78, 0.05);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.aip-example-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+.aip-example-card h4 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--umber);
+  font-family: 'Lora', serif;
+}
+
+.aip-example-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.aip-example-item {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--ecru);
+  font-size: 0.95rem;
+  color: var(--slate-600);
+  font-style: italic;
+}
+
+.aip-example-item:last-child {
+  border-bottom: none;
+}
+
+/* Setup steps */
+.aip-setup {
+  margin: 5rem 0;
+  padding: 4rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--sienna) 100%);
+  border-radius: var(--radius-lg);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.aip-setup-title {
+  font-family: 'Lora', serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.aip-setup-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 3rem;
+}
+
+.aip-step {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.aip-step-number {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.aip-step-content h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: 'Lora', serif;
+}
+
+.aip-step-content p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+  color: white;
+}
