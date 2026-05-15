@@ -1,36 +1,43 @@
-const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
+
+const createTransporter = () => {
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+  });
+
+  return google.gmail({ version: 'v1', auth: oauth2Client });
+};
 
 const sendOTP = async (email, otp) => {
   try {
     // Check if email config is provided
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    if (!process.env.EMAIL_USER || !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_REFRESH_TOKEN) {
       console.log('-------------------------------------------');
       console.log(`📧 MOCK EMAIL to: ${email}`);
       console.log(`🔑 Your 2-Step Verification Code: ${otp}`);
       console.log('-------------------------------------------');
-      console.log('⚠️ Set EMAIL_USER and EMAIL_PASS in .env to send real emails.');
+      console.log('⚠️ Set EMAIL_USER, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN in .env to send real emails.');
       return true;
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: process.env.EMAIL_PORT || 587,
-      secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
-      pool: true, // reuse connections
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000, // 10 seconds
-      family: 4, // force IPv4
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const gmail = createTransporter();
 
-    const mailOptions = {
-      from: `"Career Guidance Assistant" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Your 2-Step Verification Code',
-      html: `
+    const subject = 'Your 2-Step Verification Code';
+    const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+    const messageParts = [
+      `From: "Career Guidance Assistant" <${process.env.EMAIL_USER}>`,
+      `To: ${email}`,
+      'Content-Type: text/html; charset=utf-8',
+      'MIME-Version: 1.0',
+      `Subject: ${utf8Subject}`,
+      '',
+      `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <h2 style="color: #4a90e2; text-align: center;">Security Verification</h2>
           <p>Hello,</p>
@@ -44,10 +51,23 @@ const sendOTP = async (email, otp) => {
           <p style="font-size: 12px; color: #888; text-align: center;">This is an automated email. Please do not reply.</p>
         </div>
       `,
-    };
+    ];
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent:', info.messageId);
+    const message = messageParts.join('\n');
+    const encodedMessage = Buffer.from(message)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    const res = await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedMessage,
+      },
+    });
+
+    console.log('✅ Email sent:', res.data.id);
     return true;
   } catch (error) {
     console.error('❌ Email send error:', error);
