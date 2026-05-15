@@ -1,55 +1,69 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
     },
     email: {
-        type: String,
-        required: true,
+        type: DataTypes.STRING,
+        allowNull: false,
         unique: true,
-        trim: true,
-        lowercase: true
+        validate: {
+            isEmail: true
+        }
     },
     password: {
-        type: String,
-        required: true
+        type: DataTypes.STRING,
+        allowNull: false
     },
     role: {
-        type: String,
-        enum: ['student', 'admin'],
-        default: 'student'
+        type: DataTypes.ENUM('student', 'admin'),
+        defaultValue: 'student'
     },
     educationLevel: {
-        type: String,
-        default: 'undergraduate'
+        type: DataTypes.STRING,
+        defaultValue: 'undergraduate'
     },
     careerInterests: {
-        type: [String],
-        default: []
+        type: DataTypes.JSONB,
+        defaultValue: []
     },
     skills: {
-        type: [String],
-        default: []
+        type: DataTypes.JSONB,
+        defaultValue: []
     },
     lastLogin: {
-        type: Date
+        type: DataTypes.DATE
+    },
+    otp: {
+        type: DataTypes.STRING
+    },
+    otpExpires: {
+        type: DataTypes.DATE
+    },
+    isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 }, {
     timestamps: true
 });
 
-// Remove password when converting to JSON
-userSchema.set('toJSON', {
-    transform: (doc, ret) => {
-        delete ret.password;
-        return ret;
-    }
-});
+// Compatibility method for frontend expecting MongoDB structure
+User.prototype.toJSON = function() {
+    const values = { ...this.get() };
+    delete values.password;
+    // Alias id to _id for frontend compatibility
+    values._id = values.id;
+    return values;
+};
 
-const User = mongoose.model('User', userSchema);
 module.exports = User;

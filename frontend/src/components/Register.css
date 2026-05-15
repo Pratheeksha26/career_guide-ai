@@ -193,3 +193,25 @@
 .reg-auth-link-icon {
     font-size: 0.9rem;
 }
+
+.reg-auth-help-text {
+    font-size: 0.85rem;
+    color: var(--slate-600);
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.reg-auth-back-btn {
+    background: none;
+    border: none;
+    color: var(--slate-500);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: var(--transition);
+}
+
+.reg-auth-back-btn:hover {
+    color: var(--primary);
+}

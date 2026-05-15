@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs'); 
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
+const crypto = require('crypto');
 const User = require('../models/User');
+const emailService = require('../services/emailService');
 
 // Generate JWT Token
 const generateToken = (userId, role = 'student') => {
@@ -19,13 +22,30 @@ const generateToken = (userId, role = 'student') => {
   );
 };
 
+// Generate Temporary Registration Token
+const generatePendingToken = (userData) => {
+  const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+  return jwt.sign(
+    { 
+      pendingUser: userData,
+      type: 'registration'
+    }, 
+    secret, 
+    { expiresIn: '15m' }
+  );
+};
+
 // Register User
 exports.register = async (req, res) => {
   try {
     const { username, email, password, educationLevel } = req.body;
 
     // Check if user exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await User.findOne({ 
+      where: { 
+        [Op.or]: [{ email }, { username }] 
+      } 
+    });
     
     if (existingUser) {
       return res.status(400).json({ 
@@ -38,33 +58,31 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user with hashed password
-    const user = new User({
+    // Generate OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    // Prepare pending user data (don't save to DB yet)
+    const pendingUser = {
       username,
       email,
       password: hashedPassword,
-      educationLevel: educationLevel || 'undergraduate'
-    });
+      educationLevel: educationLevel || 'undergraduate',
+      otp,
+      otpExpires: new Date(Date.now() + 10 * 60 * 1000)
+    };
 
-    await user.save();
+    // Generate temporary token to hold registration data
+    const pendingToken = generatePendingToken(pendingUser);
 
-    // Generate token
-    const token = generateToken(user.id, user.role);
+    // Send OTP via email
+    await emailService.sendOTP(email, otp);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        educationLevel: user.educationLevel,
-        careerInterests: user.careerInterests || [],
-        skills: user.skills || [],
-        createdAt: user.createdAt
-      }
+      message: 'Verification code sent to your email',
+      requireOTP: true,
+      email: email,
+      pendingToken // Frontend must send this back
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -82,13 +100,16 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
       });
     }
+
+    // Check if user is verified (optional: you might want to allow them to login but force verification)
+    // Here we will proceed to password check first
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -99,12 +120,101 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Save OTP to user
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Send OTP via email
+    await emailService.sendOTP(user.email, otp);
+
+    res.json({
+      success: true,
+      requireOTP: true,
+      email: user.email,
+      message: 'Verification code sent to your email'
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error during login' 
+    });
+  }
+};
+
+// Verify OTP and complete login/registration
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, otp, pendingToken } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    let user;
+
+    // Case 1: Registration (User not in DB yet, data is in pendingToken)
+    if (pendingToken) {
+      try {
+        const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+        const decoded = jwt.verify(pendingToken, secret);
+        
+        if (decoded.type !== 'registration' || decoded.pendingUser.email !== email) {
+          return res.status(401).json({ success: false, message: 'Invalid verification token' });
+        }
+
+        const pendingData = decoded.pendingUser;
+
+        // Check OTP
+        if (pendingData.otp !== otp || new Date() > new Date(pendingData.otpExpires)) {
+          return res.status(401).json({ success: false, message: 'Invalid or expired verification code' });
+        }
+
+        // OTP is valid, CREATE THE USER NOW
+        user = await User.create({
+          username: pendingData.username,
+          email: pendingData.email,
+          password: pendingData.password,
+          educationLevel: pendingData.educationLevel,
+          isVerified: true
+        });
+
+      } catch (err) {
+        console.error('Pending token error:', err);
+        return res.status(401).json({ success: false, message: 'Verification session expired' });
+      }
+    } 
+    // Case 2: Login (User already in DB)
+    else {
+      user = await User.findOne({ where: { email } });
+      if (!user || !user.otp || !user.otpExpires) {
+        return res.status(401).json({ success: false, message: 'Invalid verification attempt' });
+      }
+
+      // Check if OTP matches and is not expired
+      if (user.otp !== otp || new Date() > user.otpExpires) {
+        return res.status(401).json({ success: false, message: 'Invalid or expired verification code' });
+      }
+
+      // Mark user as verified and clear OTP
+      user.isVerified = true;
+      user.otp = null;
+      user.otpExpires = null;
+      await user.save();
+    }
+
+    // Generate final token
     const token = generateToken(user.id, user.role);
 
     res.json({
       success: true,
-      message: 'Login successful',
+      message: 'Verification successful',
       token,
       user: {
         id: user._id,
@@ -118,11 +228,8 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error during login' 
-    });
+    console.error('OTP Verification error:', error);
+    res.status(500).json({ success: false, message: 'Server error during verification' });
   }
 };
 
@@ -131,7 +238,7 @@ exports.changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.userId;
 
-    const user = await User.findById(userId);
+    const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -155,7 +262,9 @@ exports.changePassword = async (req, res) => {
 
 exports.getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findByPk(req.userId, {
+      attributes: { exclude: ['password'] }
+    });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -172,13 +281,18 @@ exports.updateProfile = async (req, res) => {
     const userId = req.userId;
 
     if (username) {
-      const existingUser = await User.findOne({ username, _id: { $ne: userId } });
+      const existingUser = await User.findOne({ 
+        where: { 
+          username, 
+          id: { [Op.ne]: userId } 
+        } 
+      });
       if (existingUser) {
         return res.status(400).json({ success: false, message: 'Username already taken' });
       }
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findByPk(userId);
     if (!user) {
         return res.status(404).json({ success: false, message: 'User not found' });
     }

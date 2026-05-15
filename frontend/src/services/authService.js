@@ -31,10 +31,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login?session=expired';
+      const isAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register';
+      
+      if (!isAuthPage) {
+        // Token expired or invalid
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login?session=expired';
+      }
     }
     return Promise.reject(error);
   }
@@ -101,6 +105,16 @@ export const authService = {
   // Change password
   changePassword: async (passwordData) => {
     const response = await api.put('/auth/change-password', passwordData);
+    return response.data;
+  },
+
+  // Verify OTP
+  verifyOTP: async (email, otp, pendingToken = null) => {
+    const response = await api.post('/auth/verify-otp', { email, otp, pendingToken });
+    if (response.data.success && response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
     return response.data;
   },
 

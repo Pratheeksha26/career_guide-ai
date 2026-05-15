@@ -1,58 +1,51 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const chatSessionSchema = new mongoose.Schema({
+const ChatSession = sequelize.define('ChatSession', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-        index: true
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     title: {
-        type: String,
-        default: 'New Chat'
+        type: DataTypes.STRING,
+        defaultValue: 'New Chat'
     },
-    messages: [{
-        id: Number,
-        text: String,
-        sender: {
-            type: String,
-            enum: ['user', 'bot']
-        },
-        timestamp: {
-            type: Date,
-            default: Date.now
-        },
-        source: String,
-        files: [{
-            originalname: String,
-            mimetype: String,
-            size: Number,
-            filename: String,
-            path: String
-        }]
-    }],
+    messages: {
+        type: DataTypes.JSONB,
+        defaultValue: []
+    },
     messageCount: {
-        type: Number,
-        default: 0
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
     lastMessage: {
-        type: String
+        type: DataTypes.STRING
     }
 }, {
     timestamps: true
 });
 
-// Update messageCount before saving
-chatSessionSchema.pre('save', function() {
-    if (this.messages) {
-        this.messageCount = this.messages.length;
-        if (this.messages.length > 0) {
-            const lastMsg = this.messages[this.messages.length - 1];
-            // Update lastMessage preview
-            this.lastMessage = lastMsg.text ? lastMsg.text.substring(0, 100) : '';
+// Update messageCount and lastMessage preview before save
+ChatSession.addHook('beforeSave', (session) => {
+    if (session.messages && Array.isArray(session.messages)) {
+        session.messageCount = session.messages.length;
+        if (session.messages.length > 0) {
+            const lastMsg = session.messages[session.messages.length - 1];
+            session.lastMessage = lastMsg.text ? lastMsg.text.substring(0, 100) : '';
         }
     }
 });
 
-const ChatSession = mongoose.model('ChatSession', chatSessionSchema);
+// Compatibility for frontend
+ChatSession.prototype.toJSON = function() {
+    const values = { ...this.get() };
+    values._id = values.id;
+    return values;
+};
+
 module.exports = ChatSession;

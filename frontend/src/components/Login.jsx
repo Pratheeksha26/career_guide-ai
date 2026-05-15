@@ -12,7 +12,9 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const [showOTP, setShowOTP] = useState(false);
+  const [otp, setOtp] = useState('');
+  const { login, verifyOTP, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -69,7 +71,11 @@ const Login = () => {
     setIsSubmitting(true);
     
     try {
-      await login(formData);
+      const result = await login(formData);
+      if (result.requireOTP) {
+        setShowOTP(true);
+        toast.success('Verification code sent to your email');
+      }
     } catch (error) {
       console.error('Login error:', error);
       if (error.response?.data?.errors) {
@@ -79,6 +85,23 @@ const Login = () => {
         });
         setErrors(serverErrors);
       }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOTPSubmit = async (e) => {
+    e.preventDefault();
+    if (!otp || otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit code');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await verifyOTP(formData.email, otp);
+    } catch (error) {
+      console.error('OTP verification error:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -103,103 +126,152 @@ const Login = () => {
           <p className="login-auth-subtitle">Sign in to continue your career journey</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-auth-form">
-          <div className="login-auth-form-group">
-            <label className="login-auth-label">
-              <FaEnvelope className="login-auth-icon" />
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`login-auth-input ${errors.email ? 'login-auth-input-error' : ''}`}
-              placeholder="Enter your email"
-              disabled={isSubmitting}
-            />
-            {errors.email && (
-              <span className="login-auth-error-text">{errors.email}</span>
-            )}
-          </div>
-
-          <div className="login-auth-form-group">
-            <label className="login-auth-label">
-              <FaLock className="login-auth-icon" />
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`login-auth-input ${errors.password ? 'login-auth-input-error' : ''}`}
-              placeholder="Enter your password"
-              disabled={isSubmitting}
-            />
-            {errors.password && (
-              <span className="login-auth-error-text">{errors.password}</span>
-            )}
-          </div>
-
-          <div className="login-auth-options">
-            <label className="login-auth-remember">
-              <input type="checkbox" className="login-auth-checkbox" />
-              Remember me
-            </label>
-            <Link to="/forgot-password" name="forgot-password" className="login-auth-forgot-link">
-              Forgot password?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            className="login-auth-submit-btn"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <span>Signing In...</span>
-            ) : (
-              <>
-                <FaSignInAlt className="login-auth-button-icon" />
-                Sign In
-              </>
-            )}
-          </button>
-
-          <div className="login-auth-divider">
-            <span className="login-auth-divider-text">Or continue with</span>
-          </div>
-
-          <div className="login-auth-social-btns">
-            <button type="button" className="login-auth-social-btn">
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="login-auth-social-icon"
+        {showOTP ? (
+          <form onSubmit={handleOTPSubmit} className="login-auth-form">
+            <div className="login-auth-form-group">
+              <label className="login-auth-label">
+                <FaLock className="login-auth-icon" />
+                Verification Code
+              </label>
+              <input
+                type="text"
+                name="otp"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').substring(0, 6))}
+                className="login-auth-input"
+                placeholder="Enter 6-digit code"
+                disabled={isSubmitting}
+                maxLength="6"
+                autoComplete="one-time-code"
               />
-              Google
-            </button>
-            <button type="button" className="login-auth-social-btn">
-              <img
-                src="https://github.githubassets.com/favicons/favicon.png"
-                alt="GitHub"
-                className="login-auth-social-icon"
-              />
-              GitHub
-            </button>
-          </div>
+              <p className="login-auth-help-text">
+                Enter the code sent to {formData.email}
+              </p>
+            </div>
 
-          <div className="login-auth-footer">
-            <p className="login-auth-footer-text">
-              Don't have an account?{' '}
-              <Link to="/register" className="login-auth-link">
-                <FaUserPlus className="login-auth-link-icon" />
-                Sign up now
+            <button
+              type="submit"
+              className="login-auth-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span>Verifying...</span>
+              ) : (
+                <>
+                  <FaSignInAlt className="login-auth-button-icon" />
+                  Verify & Sign In
+                </>
+              )}
+            </button>
+            
+            <button 
+              type="button" 
+              className="login-auth-back-btn" 
+              onClick={() => setShowOTP(false)}
+              disabled={isSubmitting}
+            >
+              Back to Login
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="login-auth-form">
+            <div className="login-auth-form-group">
+              <label className="login-auth-label">
+                <FaEnvelope className="login-auth-icon" />
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`login-auth-input ${errors.email ? 'login-auth-input-error' : ''}`}
+                placeholder="Enter your email"
+                disabled={isSubmitting}
+              />
+              {errors.email && (
+                <span className="login-auth-error-text">{errors.email}</span>
+              )}
+            </div>
+
+            <div className="login-auth-form-group">
+              <label className="login-auth-label">
+                <FaLock className="login-auth-icon" />
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`login-auth-input ${errors.password ? 'login-auth-input-error' : ''}`}
+                placeholder="Enter your password"
+                disabled={isSubmitting}
+              />
+              {errors.password && (
+                <span className="login-auth-error-text">{errors.password}</span>
+              )}
+            </div>
+
+            <div className="login-auth-options">
+              <label className="login-auth-remember">
+                <input type="checkbox" className="login-auth-checkbox" />
+                Remember me
+              </label>
+              <Link to="/forgot-password" name="forgot-password" className="login-auth-forgot-link">
+                Forgot password?
               </Link>
-            </p>
-          </div>
-        </form>
+            </div>
+
+            <button
+              type="submit"
+              className="login-auth-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span>Signing In...</span>
+              ) : (
+                <>
+                  <FaSignInAlt className="login-auth-button-icon" />
+                  Sign In
+                </>
+              )}
+            </button>
+
+            <div className="login-auth-divider">
+              <span className="login-auth-divider-text">Or continue with</span>
+            </div>
+
+            <div className="login-auth-social-btns">
+              <button type="button" className="login-auth-social-btn">
+                <img
+                  src="https://www.google.com/favicon.ico"
+                  alt="Google"
+                  className="login-auth-social-icon"
+                />
+                Google
+              </button>
+              <button type="button" className="login-auth-social-btn">
+                <img
+                  src="https://github.githubassets.com/favicons/favicon.png"
+                  alt="GitHub"
+                  className="login-auth-social-icon"
+                />
+                GitHub
+              </button>
+            </div>
+
+            <div className="login-auth-footer">
+              <p className="login-auth-footer-text">
+                Don't have an account?{' '}
+                <Link to="/register" className="login-auth-link">
+                  <FaUserPlus className="login-auth-link-icon" />
+                  Sign up now
+                </Link>
+              </p>
+            </div>
+          </form>
+        )}
 
       </div>
     </div>

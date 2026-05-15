@@ -45,6 +45,7 @@ const changePasswordValidation = [
 // Public routes
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
+router.post('/verify-otp', authController.verifyOTP);
 router.post('/logout', authController.logout);
 
 // Protected routes

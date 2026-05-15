@@ -2,18 +2,23 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const mongoose = require('mongoose');
+const sequelize = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Connect to MongoDB
-const MONGODB_URI = process.env.MONGODB_URI;
-
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected successfully'))
+// Connect to PostgreSQL
+sequelize.authenticate()
+  .then(() => {
+    console.log('✅ PostgreSQL connected successfully');
+    // Sync models
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    console.log('✅ Database models synced');
+  })
   .catch(err => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ PostgreSQL connection error:', err.message);
     process.exit(1);
   });
 
@@ -99,18 +104,15 @@ app.get('/test', (req, res) => {
             chatTest: 'GET /api/chat/test'
         },
         cors: 'Enabled for all origins',
-        database: 'MongoDB connected'
+        database: 'PostgreSQL connected'
     });
 });
 
 app.get('/health', async (req, res) => {
     let dbStatus = 'disconnected';
     try {
-        if (mongoose.connection.readyState === 1) {
-            dbStatus = 'connected';
-        } else {
-            dbStatus = 'disconnected';
-        }
+        await sequelize.authenticate();
+        dbStatus = 'connected';
     } catch (err) {
         dbStatus = 'error';
     }
@@ -216,7 +218,7 @@ app.listen(PORT, () => {
     
     🚀 Server started on port: ${PORT}
     🌐 Environment: ${process.env.NODE_ENV || 'development'}
-    🗄️  Database: MongoDB
+    🗄️  Database: PostgreSQL (Neon)
     
     📍 Authentication Endpoints:
     • Register: POST http://localhost:${PORT}/api/auth/register
@@ -237,7 +239,7 @@ app.listen(PORT, () => {
     // Check environment
     console.log('📋 Environment Check:');
     console.log(`- PORT: ${PORT}`);
-    console.log(`- MONGODB_URI: ${process.env.MONGODB_URI ? '✅ Set' : '⚠️  Using default'}`);
+    console.log(`- DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ NOT SET'}`);
     console.log(`- JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Set' : '❌ NOT SET (Required!)'}`);
     if (!process.env.JWT_SECRET) {
         // Fallback check for Replit secrets injection

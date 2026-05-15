@@ -58,6 +58,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await authService.register(userData);
       if (result.success) {
+        if (result.requireOTP) {
+          return result;
+        }
         setUser(result.user);
         setIsAuthenticated(true);
         toast.success('Registration successful!');
@@ -81,6 +84,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await authService.login(userData);
       if (result.success) {
+        if (result.requireOTP) {
+          return result;
+        }
         setUser(result.user);
         setIsAuthenticated(true);
         toast.success('Login successful!');
@@ -149,6 +155,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Verify OTP function
+  const verifyOTP = async (email, otp, pendingToken = null) => {
+    setLoading(true);
+    try {
+      const result = await authService.verifyOTP(email, otp, pendingToken);
+      if (result.success) {
+        setUser(result.user);
+        setIsAuthenticated(true);
+        toast.success('Verification successful!');
+        navigate('/');
+      } else {
+        toast.error(result.message || 'Verification failed');
+      }
+      return result;
+    } catch (error) {
+      console.error('Verification error:', error);
+      toast.error(error.response?.data?.message || 'Verification failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -157,7 +186,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateProfile,
-    changePassword
+    changePassword,
+    verifyOTP
   };
 
   return (

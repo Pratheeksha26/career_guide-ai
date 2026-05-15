@@ -58,44 +58,9 @@ class ChatController {
                 console.log(`✅ Extracted ${attachmentsContext.length} characters from attachments.`);
             }
 
-            // 1️⃣ Check for structured data first
-            const structuredData = careerDataService.getCareerData(message);
-            if (structuredData) {
-                // Save message to session
-                if (sessionId) {
-                    await this.saveMessageToSession(req.userId, sessionId, message, structuredData.response, 'structured');
-                }
-                
-                return res.json({
-                    success: true,
-                    response: structuredData.response,
-                    sources: structuredData.sources,
-                    suggestions: structuredData.suggestions,
-                    isStructured: true,
-                    source: 'structured',
-                    timestamp: new Date().toISOString()
-                });
-            }
-
-            let response;
-            let source = 'groq';
-
-            // 2️⃣ Use AI service
-            try {
-                response = await groqService.getResponse(enrichedMessage, conversationHistory);
-                source = 'groq';
-            } catch (aiError) {
-                console.error('❌ AI service failed:', aiError);
-                // Fallback to offline structured data
-                const fallbackData = this.getFallbackResponse(message);
-                return res.json({
-                    success: true,
-                    response: fallbackData,
-                    source: 'fallback',
-                    timestamp: new Date().toISOString(),
-                    note: 'Using fallback response'
-                });
-            }
+            // Use AI service
+            const response = await groqService.getResponse(enrichedMessage, conversationHistory);
+            const source = 'groq';
 
             // Format the response
             const formattedResponse = this.formatCareerResponse(response);
@@ -115,16 +80,10 @@ class ChatController {
 
         } catch (error) {
             console.error('💥 Chat error:', error);
-            
-            // Final fallback to offline response
-            const fallbackResponse = this.getFallbackResponse(req.body?.message || '');
-            
             res.status(500).json({
                 success: false,
-                response: fallbackResponse,
-                source: 'offline',
-                timestamp: new Date().toISOString(),
-                error: 'AI service failed'
+                error: 'AI service failed. Please try again later.',
+                timestamp: new Date().toISOString()
             });
         }
     }
@@ -135,24 +94,14 @@ class ChatController {
             const userId = req.userId;
             const { title = 'New Chat' } = req.body;
 
-            const session = new ChatSession({
+            const session = await ChatSession.create({
                 userId,
                 title,
                 messages: []
             });
-
-            await session.save();
             res.json({
                 success: true,
-                session: {
-                    _id: session._id,
-                    user_id: session.userId,
-                    title: session.title,
-                    messages: [],
-                    messageCount: 0,
-                    createdAt: session.createdAt,
-                    updatedAt: session.updatedAt
-                }
+                session: session.toJSON()
             });
         } catch (error) {
             console.error('❌ Create session error:', error);
@@ -165,10 +114,12 @@ class ChatController {
         try {
             const userId = req.userId;
 
-            const sessions = await ChatSession.find({ userId })
-                .select('_id title messageCount lastMessage updatedAt')
-                .sort({ updatedAt: -1 })
-                .limit(20);
+            const sessions = await ChatSession.findAll({ 
+                where: { userId },
+                attributes: ['id', 'title', 'messageCount', 'lastMessage', 'updatedAt'],
+                order: [['updatedAt', 'DESC']],
+                limit: 20
+            });
 
             res.json({ success: true, sessions });
         } catch (error) {
@@ -183,7 +134,9 @@ class ChatController {
             const userId = req.userId;
             const sessionId = req.params.id;
 
-            const session = await ChatSession.findOne({ _id: sessionId, userId });
+            const session = await ChatSession.findOne({ 
+                where: { id: sessionId, userId } 
+            });
 
             if (!session) {
                 return res.status(404).json({ success: false, error: 'Session not found' });
@@ -191,14 +144,7 @@ class ChatController {
 
             res.json({
                 success: true,
-                session: {
-                    _id: session._id,
-                    title: session.title || 'New Chat',
-                    messages: session.messages,
-                    messageCount: session.messageCount,
-                    createdAt: session.createdAt,
-                    updatedAt: session.updatedAt
-                }
+                session: session.toJSON()
             });
         } catch (error) {
             console.error('❌ Get session error:', error);
@@ -212,9 +158,11 @@ class ChatController {
             const userId = req.userId;
             const sessionId = req.params.id;
 
-            const result = await ChatSession.deleteOne({ _id: sessionId, userId });
+            const result = await ChatSession.destroy({ 
+                where: { id: sessionId, userId } 
+            });
 
-            if (result.deletedCount === 0) {
+            if (result === 0) {
                 return res.status(404).json({ success: false, error: 'Session not found' });
             }
 
@@ -228,7 +176,9 @@ class ChatController {
     // Save message to session — also updates title if still default
     async saveMessageToSession(userId, sessionId, userMessage, botResponse, source, files = []) {
         try {
-            const session = await ChatSession.findOne({ _id: sessionId, userId });
+            const session = await ChatSession.findOne({ 
+                where: { id: sessionId, userId } 
+            });
 
             if (!session) {
                 console.warn(`⚠️ Session ${sessionId} not found for user ${userId}`);
@@ -236,20 +186,25 @@ class ChatController {
             }
 
             // Add user and bot messages
-            session.messages.push({
+            const currentMessages = Array.isArray(session.messages) ? [...session.messages] : [];
+            
+            currentMessages.push({
                 id: Date.now(),
                 text: userMessage || (files.length > 0 ? `📁 Shared ${files.length} file(s)` : ''),
                 sender: 'user',
                 timestamp: new Date(),
                 files: files
             });
-            session.messages.push({
+            
+            currentMessages.push({
                 id: Date.now() + 1,
                 text: botResponse,
                 sender: 'bot',
                 timestamp: new Date(),
                 source
             });
+
+            session.messages = currentMessages;
 
             // Auto-update title from first user message if still default
             if (!session.title || session.title === 'New Chat') {
@@ -263,30 +218,13 @@ class ChatController {
                 session.title = newTitle;
             }
 
+            session.changed('messages', true);
             await session.save();
         } catch (error) {
             console.error('⚠️ Failed to save message:', error);
         }
     }
 
-    // Get fallback response for offline mode
-    getFallbackResponse(message) {
-        const lowerMessage = message.toLowerCase();
-        
-        if (lowerMessage.includes('stream') || lowerMessage.includes('science') || lowerMessage.includes('commerce') || lowerMessage.includes('arts')) {
-            return `🎓 **Stream Selection Guide**\n\n**Science Stream:**\n✅ **Best for:** Engineering, Medicine, Research\n📚 **Subjects:** Physics, Chemistry, Math/Biology\n🎯 **Top Careers:**\n• Software Engineer (₹8-20 LPA)\n• Doctor (₹6-15 LPA)\n• Data Scientist (₹10-25 LPA)\n• Research Scientist (₹7-18 LPA)\n\n**Commerce Stream:**\n✅ **Best for:** Business, Finance, Management\n📚 **Subjects:** Accounts, Economics, Business\n🎯 **Top Careers:**\n• Chartered Accountant (₹8-20 LPA)\n• MBA Graduate (₹10-30 LPA)\n• Financial Analyst (₹6-15 LPA)\n\n**Arts Stream:**\n✅ **Best for:** Law, Journalism, Civil Services\n📚 **Subjects:** History, Political Science, Psychology\n🎯 **Top Careers:**\n• Lawyer (₹5-15 LPA)\n• Civil Servant (₹8-25 LPA)\n• Journalist (₹4-12 LPA)\n\n💡 **Choosing Tip:** Consider your interests, aptitude, and career goals.`;
-        }
-        
-        if (lowerMessage.includes('tcs') || lowerMessage.includes('tata consultancy')) {
-            return `🏢 **TCS Recruitment Process**\n\n📋 **Process:**\n1. Online Test (Aptitude + Coding)\n2. Technical Interview\n3. HR Interview\n\n💰 **Salary:**\n• Freshers: ₹3.5-7 LPA\n\n🎓 **Eligibility:**\n• 60% in academics\n• No backlogs\n• Good communication`;
-        }
-        
-        if (lowerMessage.includes('jee') || lowerMessage.includes('engineering')) {
-            return `📚 **JEE Preparation**\n\n📖 **Syllabus:**\n• Physics, Chemistry, Mathematics\n\n📅 **Study Plan:**\n• 6-8 hours daily\n• Regular mock tests\n• Focus weak areas`;
-        }
-        
-        return `🤖 **Career Guidance Assistant**\n\nI can help with:\n• Stream selection\n• Job guidance\n• Entrance exams\n• Skills development\n\n**Try asking:**\n• "Which stream is best for me?"\n• "TCS hiring process"\n• "JEE preparation tips"\n• "Skills for data science"`;
-    }
 
     formatCareerResponse(response) {
         return response || 'No response generated.';
@@ -305,9 +243,11 @@ class ChatController {
     async getChatHistory(req, res) {
         try {
             const userId = req.userId;
-            const chats = await ChatSession.find({ userId })
-                .select('_id title messageCount updatedAt')
-                .sort({ updatedAt: -1 });
+            const chats = await ChatSession.findAll({ 
+                where: { userId },
+                attributes: ['id', 'title', 'messageCount', 'updatedAt'],
+                order: [['updatedAt', 'DESC']]
+            });
             
             res.json({
                 success: true,
@@ -329,7 +269,9 @@ class ChatController {
             const { id } = req.params;
             const userId = req.userId;
             
-            await ChatSession.deleteOne({ _id: id, userId });
+            await ChatSession.destroy({ 
+                where: { id: id, userId } 
+            });
             
             res.json({
                 success: true,
@@ -350,12 +292,11 @@ class ChatController {
             const { messages, sessionName } = req.body;
             const userId = req.userId;
             
-            const session = new ChatSession({
+            const session = await ChatSession.create({
                 userId,
                 title: sessionName,
                 messages
             });
-            await session.save();
             
             res.json({
                 success: true,

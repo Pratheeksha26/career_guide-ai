@@ -22,7 +22,10 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  const [showOTP, setShowOTP] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [pendingToken, setPendingToken] = useState(null);
+  const { register, verifyOTP } = useAuth();
   const navigate = useNavigate();
 
   const educationLevels = [
@@ -98,7 +101,12 @@ const Register = () => {
         educationLevel: formData.educationLevel,
       };
       
-      await register(userData);
+      const result = await register(userData);
+      if (result.requireOTP) {
+        setPendingToken(result.pendingToken);
+        setShowOTP(true);
+        toast.success('Verification code sent to your email');
+      }
     } catch (error) {
       console.error('Registration error:', error);
       if (error.response?.data?.errors) {
@@ -115,6 +123,23 @@ const Register = () => {
     }
   };
 
+  const handleOTPSubmit = async (e) => {
+    e.preventDefault();
+    if (!otp || otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit code');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await verifyOTP(formData.email, otp, pendingToken);
+    } catch (error) {
+      console.error('OTP verification error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="reg-auth-container">
       <div className="reg-auth-card">
@@ -126,144 +151,193 @@ const Register = () => {
           <p className="reg-auth-subtitle">Join us and start your career journey</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="reg-auth-form">
-          <div className="reg-auth-form-group">
-            <label className="reg-auth-label">
-              <FaUser className="reg-auth-icon" />
-              Username
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className={`reg-auth-input ${errors.username ? 'reg-auth-input-error' : ''}`}
-              placeholder="Choose a username"
-              disabled={isSubmitting}
-            />
-            {errors.username && (
-              <span className="reg-auth-error-text">{errors.username}</span>
-            )}
-          </div>
+        {showOTP ? (
+          <form onSubmit={handleOTPSubmit} className="reg-auth-form">
+            <div className="reg-auth-form-group">
+              <label className="reg-auth-label">
+                <FaLock className="reg-auth-icon" />
+                Verification Code
+              </label>
+              <input
+                type="text"
+                name="otp"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').substring(0, 6))}
+                className="reg-auth-input"
+                placeholder="Enter 6-digit code"
+                disabled={isSubmitting}
+                maxLength="6"
+                autoComplete="one-time-code"
+              />
+              <p className="reg-auth-help-text">
+                Enter the code sent to {formData.email}
+              </p>
+            </div>
 
-          <div className="reg-auth-form-group">
-            <label className="reg-auth-label">
-              <FaEnvelope className="reg-auth-icon" />
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`reg-auth-input ${errors.email ? 'reg-auth-input-error' : ''}`}
-              placeholder="Enter your email"
-              disabled={isSubmitting}
-            />
-            {errors.email && (
-              <span className="reg-auth-error-text">{errors.email}</span>
-            )}
-          </div>
-
-          <div className="reg-auth-form-group">
-            <label className="reg-auth-label">
-              <FaLock className="reg-auth-icon" />
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`reg-auth-input ${errors.password ? 'reg-auth-input-error' : ''}`}
-              placeholder="Create a password"
-              disabled={isSubmitting}
-            />
-            {errors.password && (
-              <span className="reg-auth-error-text">{errors.password}</span>
-            )}
-          </div>
-
-          <div className="reg-auth-form-group">
-            <label className="reg-auth-label">
-              <FaLock className="reg-auth-icon" />
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`reg-auth-input ${errors.confirmPassword ? 'reg-auth-input-error' : ''}`}
-              placeholder="Confirm your password"
-              disabled={isSubmitting}
-            />
-            {errors.confirmPassword && (
-              <span className="reg-auth-error-text">{errors.confirmPassword}</span>
-            )}
-          </div>
-
-          <div className="reg-auth-form-group">
-            <label className="reg-auth-label">
-              <FaUserGraduate className="reg-auth-icon" />
-              Education Level
-            </label>
-            <select
-              name="educationLevel"
-              value={formData.educationLevel}
-              onChange={handleChange}
-              className="reg-auth-select"
+            <button
+              type="submit"
+              className="reg-auth-submit-btn"
               disabled={isSubmitting}
             >
-              {educationLevels.map((level) => (
-                <option key={level.value} value={level.value}>
-                  {level.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              {isSubmitting ? (
+                <span>Verifying...</span>
+              ) : (
+                <>
+                  <FaUserPlus className="reg-auth-button-icon" />
+                  Verify & Create Account
+                </>
+              )}
+            </button>
+            
+            <button 
+              type="button" 
+              className="reg-auth-back-btn" 
+              onClick={() => setShowOTP(false)}
+              disabled={isSubmitting}
+            >
+              Back to Sign Up
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="reg-auth-form">
+            <div className="reg-auth-form-group">
+              <label className="reg-auth-label">
+                <FaUser className="reg-auth-icon" />
+                Username
+              </label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className={`reg-auth-input ${errors.username ? 'reg-auth-input-error' : ''}`}
+                placeholder="Choose a username"
+                disabled={isSubmitting}
+              />
+              {errors.username && (
+                <span className="reg-auth-error-text">{errors.username}</span>
+              )}
+            </div>
 
-          <div className="reg-auth-terms">
-            <label className="reg-auth-terms-label">
-              <input type="checkbox" className="reg-auth-checkbox" required />
-              <span>
-                I agree to the{' '}
-                <Link to="/terms" className="reg-auth-terms-link">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="reg-auth-terms-link">
-                  Privacy Policy
+            <div className="reg-auth-form-group">
+              <label className="reg-auth-label">
+                <FaEnvelope className="reg-auth-icon" />
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`reg-auth-input ${errors.email ? 'reg-auth-input-error' : ''}`}
+                placeholder="Enter your email"
+                disabled={isSubmitting}
+              />
+              {errors.email && (
+                <span className="reg-auth-error-text">{errors.email}</span>
+              )}
+            </div>
+
+            <div className="reg-auth-form-group">
+              <label className="reg-auth-label">
+                <FaLock className="reg-auth-icon" />
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`reg-auth-input ${errors.password ? 'reg-auth-input-error' : ''}`}
+                placeholder="Create a password"
+                disabled={isSubmitting}
+              />
+              {errors.password && (
+                <span className="reg-auth-error-text">{errors.password}</span>
+              )}
+            </div>
+
+            <div className="reg-auth-form-group">
+              <label className="reg-auth-label">
+                <FaLock className="reg-auth-icon" />
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`reg-auth-input ${errors.confirmPassword ? 'reg-auth-input-error' : ''}`}
+                placeholder="Confirm your password"
+                disabled={isSubmitting}
+              />
+              {errors.confirmPassword && (
+                <span className="reg-auth-error-text">{errors.confirmPassword}</span>
+              )}
+            </div>
+
+            <div className="reg-auth-form-group">
+              <label className="reg-auth-label">
+                <FaUserGraduate className="reg-auth-icon" />
+                Education Level
+              </label>
+              <select
+                name="educationLevel"
+                value={formData.educationLevel}
+                onChange={handleChange}
+                className="reg-auth-select"
+                disabled={isSubmitting}
+              >
+                {educationLevels.map((level) => (
+                  <option key={level.value} value={level.value}>
+                    {level.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="reg-auth-terms">
+              <label className="reg-auth-terms-label">
+                <input type="checkbox" className="reg-auth-checkbox" required />
+                <span>
+                  I agree to the{' '}
+                  <Link to="/terms" className="reg-auth-terms-link">
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link to="/privacy" className="reg-auth-terms-link">
+                    Privacy Policy
+                  </Link>
+                </span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="reg-auth-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span>Creating Account...</span>
+              ) : (
+                <>
+                  <FaUserPlus className="reg-auth-button-icon" />
+                  Create Account
+                </>
+              )}
+            </button>
+
+            <div className="reg-auth-footer">
+              <p className="reg-auth-footer-text">
+                Already have an account?{' '}
+                <Link to="/login" className="reg-auth-link">
+                  <FaArrowLeft className="reg-auth-link-icon" />
+                  Sign in here
                 </Link>
-              </span>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            className="reg-auth-submit-btn"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <span>Creating Account...</span>
-            ) : (
-              <>
-                <FaUserPlus className="reg-auth-button-icon" />
-                Create Account
-              </>
-            )}
-          </button>
-
-          <div className="reg-auth-footer">
-            <p className="reg-auth-footer-text">
-              Already have an account?{' '}
-              <Link to="/login" className="reg-auth-link">
-                <FaArrowLeft className="reg-auth-link-icon" />
-                Sign in here
-              </Link>
-            </p>
-          </div>
-        </form>
+              </p>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

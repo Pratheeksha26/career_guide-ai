@@ -72,7 +72,7 @@ class InterviewController {
             const analysis = JSON.parse(jsonMatch[0]);
 
             // Save to database
-            const newInterview = new MockInterview({
+            const newInterview = await MockInterview.create({
                 userId: req.userId,
                 jobRole,
                 questions: analysis.questionFeedback.map((f, i) => ({
@@ -85,8 +85,6 @@ class InterviewController {
                 generalFeedback: analysis.generalFeedback
             });
 
-            await newInterview.save();
-
             res.json({ success: true, data: newInterview });
         } catch (error) {
             console.error('Error submitting interview:', error);
@@ -97,7 +95,10 @@ class InterviewController {
     // Get user interview history
     async getHistory(req, res) {
         try {
-            const history = await MockInterview.find({ userId: req.userId }).sort({ createdAt: -1 });
+            const history = await MockInterview.findAll({ 
+                where: { userId: req.userId },
+                order: [['createdAt', 'DESC']] 
+            });
             res.json({ success: true, history });
         } catch (error) {
             console.error('Error fetching history:', error);

@@ -1,38 +1,50 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const mockInterviewSchema = new mongoose.Schema({
+const MockInterview = sequelize.define('MockInterview', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-        index: true
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     jobRole: {
-        type: String,
-        required: true
+        type: DataTypes.STRING,
+        allowNull: false
     },
-    questions: [{
-        question: String,
-        userAnswer: String,
-        feedback: String,
-        score: Number
-    }],
+    questions: {
+        type: DataTypes.JSONB,
+        defaultValue: []
+    },
     overallScores: {
-        answerQuality: { type: Number, default: 0 },
-        confidence: { type: Number, default: 0 },
-        posture: { type: Number, default: 0 },
-        attire: { type: Number, default: 0 },
-        overall: { type: Number, default: 0 }
+        type: DataTypes.JSONB,
+        defaultValue: {
+            answerQuality: 0,
+            confidence: 0,
+            posture: 0,
+            attire: 0,
+            overall: 0
+        }
     },
-    generalFeedback: String,
+    generalFeedback: {
+        type: DataTypes.TEXT
+    },
     status: {
-        type: String,
-        enum: ['in-progress', 'completed'],
-        default: 'completed'
+        type: DataTypes.ENUM('in-progress', 'completed'),
+        defaultValue: 'completed'
     }
 }, {
     timestamps: true
 });
 
-const MockInterview = mongoose.model('MockInterview', mockInterviewSchema);
+// Compatibility for frontend
+MockInterview.prototype.toJSON = function() {
+    const values = { ...this.get() };
+    values._id = values.id;
+    return values;
+};
+
 module.exports = MockInterview;
