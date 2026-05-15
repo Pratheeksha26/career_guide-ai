@@ -22,6 +22,11 @@ A state-of-the-art career guidance platform powered by Artificial Intelligence. 
 - **Behavioral Analysis**: Evaluates **answer quality (STAR method)**, **confidence** (analyzing filler words), **posture**, and **attire**.
 - **Comprehensive Scorecard**: Receive detailed performance reports with specific "Pro-Tips" for improvement.
 
+### 🔐 2-Step Verification (2FA)
+- **Email Confirmation**: Secure login and registration with 6-digit OTP codes.
+- **Stateless Verification**: High security with temporary verification tokens.
+- **Auto-Sync**: Automatically handles verified status in the user profile.
+
 ### 🧠 Aptitude Training
 - **Topic-wise Practice**: Tackle quantitative, logical, verbal, and data interpretation questions.
 - **Progress Tracking**: Real-time scoring and difficulty-based question selection.
@@ -39,9 +44,10 @@ A state-of-the-art career guidance platform powered by Artificial Intelligence. 
 
 ### Backend
 - **Node.js & Express**: High-performance API architecture.
-- **MongoDB**: Flexible, NoSQL database with Mongoose ODM for reliable data storage.
+- **PostgreSQL**: Robust, relational database for secure and structured data management.
+- **Sequelize ORM**: Powerful database abstraction layer with JSONB support.
 - **Groq API**: Leveraging Llama 3 models for ultra-fast, intelligent AI analysis.
-- **Multer**: Secure file upload management.
+- **Nodemailer**: Integrated email service for secure 2FA delivery.
 - **JWT**: Secure, stateless authentication.
 
 ---
@@ -50,8 +56,9 @@ A state-of-the-art career guidance platform powered by Artificial Intelligence. 
 
 ### Prerequisites
 - **Node.js** (v18 or higher)
-- **MongoDB** (Local instance or Atlas connection string)
+- **PostgreSQL** (Local instance or Neon/RDS connection string)
 - **Groq API Key** (Get one at [console.groq.com](https://console.groq.com))
+- **SMTP Server** (Gmail or similar for 2FA emails)
 
 ### Installation & Setup
 
@@ -69,9 +76,15 @@ A state-of-the-art career guidance platform powered by Artificial Intelligence. 
    Create a `.env` file in the `backend` directory:
    ```env
    PORT=8080
-   MONGODB_URI=your_mongodb_connection_string
+   DATABASE_URL=your_postgresql_connection_string
    JWT_SECRET=your_super_secret_key
    GROQ_API_KEY=your_groq_api_key
+   
+   # Email settings
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASS=your_app_password
    ```
 
 3. **Frontend Configuration**:
@@ -105,9 +118,11 @@ Access the platform at: [http://localhost:5000](http://localhost:5000)
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `PORT` | Backend server port | `8080` |
-| `MONGODB_URI` | Connection string for MongoDB | Required |
+| `DATABASE_URL` | Connection string for PostgreSQL | Required |
 | `JWT_SECRET` | Secret key for token signing | Required |
 | `GROQ_API_KEY` | API key from Groq Cloud Console | Required |
+| `EMAIL_USER` | SMTP username for 2FA | Required |
+| `EMAIL_PASS` | SMTP password for 2FA | Required |
 
 ---
 
