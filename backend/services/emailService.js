@@ -1,10 +1,4 @@
 const nodemailer = require('nodemailer');
-const dns = require('dns');
-
-// Force IPv4 as a fix for ENETUNREACH issues on some cloud platforms (Node 18+)
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder('ipv4first');
-}
 
 const sendOTP = async (email, otp) => {
   try {
@@ -25,6 +19,7 @@ const sendOTP = async (email, otp) => {
       pool: true, // reuse connections
       connectionTimeout: 10000, // 10 seconds
       greetingTimeout: 10000, // 10 seconds
+      family: 4, // force IPv4
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
