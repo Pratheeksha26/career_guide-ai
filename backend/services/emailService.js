@@ -1,34 +1,22 @@
-const nodemailer = require('nodemailer');
-
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false, // true for port 465, false for 587 (STARTTLS)
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-};
+const { Resend } = require('resend');
 
 const sendOTP = async (email, otp) => {
   try {
-    // Check if email config is provided
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
       console.log('-------------------------------------------');
       console.log(`📧 MOCK EMAIL to: ${email}`);
       console.log(`🔑 Your 2-Step Verification Code: ${otp}`);
       console.log('-------------------------------------------');
-      console.log('⚠️ Set EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS in .env to send real emails.');
+      console.log('⚠️ Set RESEND_API_KEY in .env to send real emails.');
       return true;
     }
 
-    const transporter = createTransporter();
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    await transporter.sendMail({
-      from: `"Career Guidance Assistant" <${process.env.EMAIL_USER}>`,
-      to: email,
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'Career Guidance <onboarding@resend.dev>',
+      to: [email],
       subject: 'Your 2-Step Verification Code',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
@@ -46,7 +34,13 @@ const sendOTP = async (email, otp) => {
       `,
     });
 
-    console.log(`✅ OTP email sent to: ${email}`);
+    if (error) {
+      console.error('❌ Resend error:', error);
+      console.log(`🔑 FALLBACK OTP for ${email}: ${otp}`);
+      return false;
+    }
+
+    console.log(`✅ OTP email sent to: ${email} | ID: ${data.id}`);
     return true;
   } catch (error) {
     console.error('❌ Email send error:', error);
