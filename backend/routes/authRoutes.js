@@ -42,10 +42,32 @@ const changePasswordValidation = [
     .withMessage('New password must be at least 6 characters long')
 ];
 
+const forgotPasswordValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please enter a valid email')
+    .normalizeEmail()
+];
+
+const resetPasswordValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please enter a valid email')
+    .normalizeEmail(),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('OTP must be 6 characters'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long')
+];
+
 // Public routes
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.post('/verify-otp', authController.verifyOTP);
+router.post('/forgot-password', forgotPasswordValidation, authController.forgotPassword);
+router.post('/reset-password', resetPasswordValidation, authController.resetPassword);
 router.post('/logout', authController.logout);
 
 // Protected routes

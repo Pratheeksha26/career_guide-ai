@@ -16,6 +16,7 @@ import AptitudePage from './pages/Aptitude/AptitudePage';
 import ResourcesPage from './pages/ResourcesPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
 import UserProfilePage from './pages/Profile/UserProfilePage';
 import ResumePage from './pages/Resume/ResumePage';
 import MockInterviewPage from './pages/Interview/MockInterviewPage';
@@ -50,6 +51,7 @@ const AppContent = () => {
           <Routes>
             <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} />
             <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <RegisterPage />} />
+            <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" /> : <ForgotPasswordPage />} />
             <Route path="/profile" element={<PrivateRoute><UserProfilePage /></PrivateRoute>} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/chat" element={<PrivateRoute><AIAssistantPage /></PrivateRoute>} />

@@ -178,6 +178,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Forgot password function
+  const forgotPassword = async (email) => {
+    setLoading(true);
+    try {
+      const result = await authService.forgotPassword(email);
+      if (result.success) {
+        toast.success('Password reset code sent to your email');
+      }
+      return result;
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      toast.error(error.response?.data?.message || 'Failed to request password reset');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset password function
+  const resetPassword = async (email, otp, newPassword) => {
+    setLoading(true);
+    try {
+      const result = await authService.resetPassword(email, otp, newPassword);
+      if (result.success) {
+        toast.success('Password reset successfully');
+        navigate('/login');
+      }
+      return result;
+    } catch (error) {
+      console.error('Reset password error:', error);
+      toast.error(error.response?.data?.message || 'Failed to reset password');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -187,7 +224,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     changePassword,
-    verifyOTP
+    verifyOTP,
+    forgotPassword,
+    resetPassword
   };
 
   return (

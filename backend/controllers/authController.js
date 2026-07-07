@@ -260,6 +260,85 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+// Forgot Password Request
+exports.forgotPassword = async (req, res) => {
+  try {
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No user found with this email' });
+    }
+
+    // Generate OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // Send OTP via email
+    await emailService.sendOTP(user.email, otp);
+
+    res.json({
+      success: true,
+      message: 'Password reset code sent to your email'
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Server error during forgot password' });
+  }
+};
+
+// Reset Password
+exports.resetPassword = async (req, res) => {
+  try {
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email, otp, newPassword } = req.body;
+    
+    const user = await User.findOne({ where: { email } });
+    
+    if (!user || !user.otp || !user.otpExpires) {
+      return res.status(401).json({ success: false, message: 'Invalid request' });
+    }
+
+    // Check if OTP matches and is not expired
+    if (user.otp !== otp || new Date() > user.otpExpires) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired reset code' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user record
+    user.password = hashedPassword;
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully. You can now login with your new password.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, message: 'Server error during password reset' });
+  }
+};
+
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.userId, {
