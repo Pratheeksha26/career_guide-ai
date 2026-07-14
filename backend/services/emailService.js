@@ -1,22 +1,27 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
 const sendOTP = async (email, otp) => {
   try {
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
       console.log('-------------------------------------------');
       console.log(`📧 MOCK EMAIL to: ${email}`);
       console.log(`🔑 Your 2-Step Verification Code: ${otp}`);
       console.log('-------------------------------------------');
-      console.log('⚠️ Set RESEND_API_KEY in .env to send real emails.');
+      console.log('⚠️ Set GMAIL_USER and GMAIL_APP_PASSWORD in .env to send real emails.');
       return true;
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
 
-    const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Career Guidance <onboarding@resend.dev>',
-      to: [email],
+    const mailOptions = {
+      from: `Career Guidance <${process.env.GMAIL_USER}>`,
+      to: email,
       subject: 'Your 2-Step Verification Code',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
@@ -32,16 +37,12 @@ const sendOTP = async (email, otp) => {
           <p style="font-size: 12px; color: #888; text-align: center;">This is an automated email. Please do not reply.</p>
         </div>
       `,
-    });
+    };
 
-    if (error) {
-      console.error('❌ Resend error:', error);
-      console.log(`🔑 FALLBACK OTP for ${email}: ${otp}`);
-      return false;
-    }
-
-    console.log(`✅ OTP email sent to: ${email} | ID: ${data.id}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ OTP email sent to: ${email} | ID: ${info.messageId}`);
     return true;
+
   } catch (error) {
     console.error('❌ Email send error:', error);
     // In dev mode, log the OTP so the flow doesn't break entirely
