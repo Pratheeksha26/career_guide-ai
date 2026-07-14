@@ -301,7 +301,7 @@ class ChatController {
             res.json({
                 success: true,
                 message: 'Chat session saved successfully',
-                sessionId: session._id
+                sessionId: session.id || session._id,
             });
         } catch (error) {
             console.error('💥 Save chat session error:', error);
