@@ -1,4 +1,8 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+const util = require('util');
+
+const resolve4 = util.promisify(dns.resolve4);
 
 const sendOTP = async (email, otp) => {
   try {
@@ -11,16 +15,22 @@ const sendOTP = async (email, otp) => {
       return true;
     }
 
+    // Force IPv4 resolution manually because some hosting platforms ignore the 'family: 4' flag
+    const addresses = await resolve4('smtp.gmail.com');
+    const ipv4 = addresses[0];
+
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: ipv4,
       port: 465,
       secure: true,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
-      // Force IPv4 to prevent ENETUNREACH errors on servers with broken IPv6 routing
-      family: 4,
+      tls: {
+        // We must tell Node that the certificate is for smtp.gmail.com, since we are connecting via IP
+        servername: 'smtp.gmail.com'
+      }
     });
 
     const mailOptions = {
