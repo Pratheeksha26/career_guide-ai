@@ -1,43 +1,26 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
-const util = require('util');
-
-const resolve4 = util.promisify(dns.resolve4);
+const axios = require('axios');
 
 const sendOTP = async (email, otp) => {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.BREVO_API_KEY || !process.env.BREVO_SENDER_EMAIL) {
       console.log('-------------------------------------------');
       console.log(`📧 MOCK EMAIL to: ${email}`);
       console.log(`🔑 Your 2-Step Verification Code: ${otp}`);
       console.log('-------------------------------------------');
-      console.log('⚠️ Set GMAIL_USER and GMAIL_APP_PASSWORD in .env to send real emails.');
+      console.log('⚠️ Set BREVO_API_KEY and BREVO_SENDER_EMAIL in .env to send real emails.');
       return true;
     }
 
-    // Force IPv4 resolution manually because some hosting platforms ignore the 'family: 4' flag
-    const addresses = await resolve4('smtp.gmail.com');
-    const ipv4 = addresses[0];
-
-    const transporter = nodemailer.createTransport({
-      host: ipv4,
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+    const payload = {
+      sender: {
+        name: 'Career Guidance',
+        email: process.env.BREVO_SENDER_EMAIL
       },
-      tls: {
-        // We must tell Node that the certificate is for smtp.gmail.com, since we are connecting via IP
-        servername: 'smtp.gmail.com'
-      }
-    });
-
-    const mailOptions = {
-      from: `Career Guidance <${process.env.GMAIL_USER}>`,
-      to: email,
+      to: [
+        { email: email }
+      ],
       subject: 'Your 2-Step Verification Code',
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <h2 style="color: #4a90e2; text-align: center;">Security Verification</h2>
           <p>Hello,</p>
@@ -50,15 +33,22 @@ const sendOTP = async (email, otp) => {
           <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
           <p style="font-size: 12px; color: #888; text-align: center;">This is an automated email. Please do not reply.</p>
         </div>
-      `,
+      `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ OTP email sent to: ${email} | ID: ${info.messageId}`);
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
+      headers: {
+        'accept': 'application/json',
+        'api-key': process.env.BREVO_API_KEY,
+        'content-type': 'application/json'
+      }
+    });
+
+    console.log(`✅ OTP email sent to: ${email} | Message ID: ${response.data.messageId}`);
     return true;
 
   } catch (error) {
-    console.error('❌ Email send error:', error);
+    console.error('❌ Email send error:', error.response?.data || error.message);
     // In dev mode, log the OTP so the flow doesn't break entirely
     console.log(`🔑 FALLBACK OTP for ${email}: ${otp}`);
     return false;
