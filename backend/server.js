@@ -262,3 +262,6 @@ app.listen(PORT, () => {
         console.log('   Add JWT_SECRET=your_secret_key to your .env file\n');
     }
 });
+
+// Export the app for Vercel Serverless Functions
+module.exports = app;
