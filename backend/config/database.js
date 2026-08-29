@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+require('pg'); // Required for Vercel Serverless Functions to bundle the pg module
 
 const databaseUrl = process.env.DATABASE_URL;
 

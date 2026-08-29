@@ -18,7 +18,7 @@ sequelize.authenticate()
   .then(() => {
     console.log('✅ PostgreSQL connected successfully');
     // Sync models
-    return sequelize.sync({ alter: true });
+    return sequelize.sync({ alter: process.env.NODE_ENV !== 'production' });
   })
   .then(() => {
     console.log('✅ Database models synced');
