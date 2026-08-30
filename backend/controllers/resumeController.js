@@ -22,6 +22,12 @@ exports.analyzeResume = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Unsupported file format. Please upload PDF or DOCX.' });
         }
 
+        // Truncate resume text to avoid exceeding Groq request size limits
+        const MAX_RESUME_CHARS = 3000;
+        if (resumeText.length > MAX_RESUME_CHARS) {
+            resumeText = resumeText.slice(0, MAX_RESUME_CHARS) + '\n... (truncated)';
+        }
+
         if (!resumeText || resumeText.trim().length < 50) {
             return res.status(400).json({ success: false, message: 'Could not extract sufficient text from resume.' });
         }
