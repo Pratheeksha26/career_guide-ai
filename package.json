@@ -11,5 +11,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "pg": "^8.23.0",
+    "pg-hstore": "^2.3.4"
+  }
 }
