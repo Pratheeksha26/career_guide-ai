@@ -1,14 +1,5 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "backend/**/*.js",
-            "use": "@vercel/node",
-            "config": {
-                "maxLambdaSize": "50mb"
-            }
-        }
-    ],
     "functions": {
         "backend/**/*.js": {
             "runtime": "nodejs18.x"
@@ -22,6 +13,15 @@
         {
             "src": "/(.*)",
             "dest": "backend/server.js"
+        }
+    ],
+    "builds": [
+        {
+            "src": "backend/**/*.js",
+            "use": "@vercel/node",
+            "config": {
+                "maxLambdaSize": "50mb"
+            }
         }
     ]
 }
