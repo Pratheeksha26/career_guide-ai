@@ -38,9 +38,12 @@ class GroqService {
                 { role: 'user', content: message }
             ];
 
+            const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+            console.log(`🤖 Requesting Groq model: ${model} (payload size: ${JSON.stringify(messages).length} chars)`);
+
             const completion = await this.groq.chat.completions.create({
                 messages: messages,
-                model: process.env.GROQ_MODEL || 'groq/compound',
+                model: model,
                 temperature: 0.8,
                 max_tokens: 3000,
                 top_p: 1,

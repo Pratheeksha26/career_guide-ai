@@ -50,7 +50,14 @@ class ChatController {
                 });
 
                 const attachmentsContext = results
-                    .map((text, index) => `\n--- START OF ATTACHMENT: ${req.files[index].originalname} ---\n${text}\n--- END OF ATTACHMENT: ${req.files[index].originalname} ---\n`)
+                    .map((text, index) => {
+                        const MAX_FILE_CHARS = 4000;
+                        let truncatedText = text;
+                        if (text.length > MAX_FILE_CHARS) {
+                            truncatedText = text.slice(0, MAX_FILE_CHARS) + '\n... (truncated)';
+                        }
+                        return `\n--- START OF ATTACHMENT: ${req.files[index].originalname} ---\n${truncatedText}\n--- END OF ATTACHMENT: ${req.files[index].originalname} ---\n`;
+                    })
                     .join('\n');
                 
                 enrichedMessage = `[User uploaded ${req.files.length} document(s). Use the content below to answer their question if relevant.]\n\n${attachmentsContext}\n\nUSER QUESTION: ${message}`;
