@@ -1,4 +1,4 @@
-const { PDFParse } = require('pdf-parse');
+const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const groqService = require('../services/groqService');
 
@@ -13,10 +13,8 @@ exports.analyzeResume = async (req, res) => {
         const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
 
         if (fileExtension === 'pdf') {
-            const parser = new PDFParse({ data: fileContent });
-            const data = await parser.getText();
+            const data = await pdfParse(fileContent);
             resumeText = data.text;
-            await parser.destroy(); // Free memory
         } else if (fileExtension === 'docx') {
             const result = await mammoth.extractRawText({ buffer: fileContent });
             resumeText = result.value;

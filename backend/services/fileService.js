@@ -1,4 +1,4 @@
-const { PDFParse } = require('pdf-parse');
+const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Tesseract = require('tesseract.js');
 const fs = require('fs');
@@ -43,9 +43,7 @@ class FileService {
 
     async extractFromPDF(buffer) {
         try {
-            const parser = new PDFParse({ data: buffer });
-            const data = await parser.getText();
-            await parser.destroy(); // Free memory
+            const data = await pdfParse(buffer);
             return data.text;
         } catch (error) {
             console.error('PDF extraction error:', error);
