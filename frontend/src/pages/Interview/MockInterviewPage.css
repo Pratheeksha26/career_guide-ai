@@ -315,3 +315,104 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==============================
+   Mobile Responsive
+   ============================== */
+@media (max-width: 768px) {
+    .iv-container {
+        margin: 20px auto;
+        padding: 1rem;
+    }
+
+    .iv-hero {
+        padding: 40px 1.5rem;
+    }
+
+    .iv-hero h1 {
+        font-size: 2.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .iv-hero p {
+        font-size: 1.05rem;
+        margin-bottom: 2rem;
+    }
+
+    .iv-layout {
+        grid-template-columns: 1fr;
+        padding: 1.25rem;
+        gap: 1.5rem;
+    }
+
+    /* Sidebar stacks below the video on mobile */
+    .iv-sidebar {
+        order: 2;
+    }
+
+    .iv-main {
+        order: 1;
+    }
+
+    .iv-controls {
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 1.3rem;
+    }
+
+    .btn-next {
+        padding: 0 2rem;
+        font-size: 0.95rem;
+    }
+
+    .iv-card {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .iv-question-card {
+        padding: 1.25rem;
+    }
+
+    .iv-transcript-box {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .iv-container {
+        padding: 0.875rem;
+        margin: 12px auto;
+    }
+
+    .iv-hero {
+        padding: 28px 1rem;
+    }
+
+    .iv-hero h1 {
+        font-size: 2rem;
+    }
+
+    .iv-layout {
+        padding: 1rem;
+        gap: 1.25rem;
+    }
+
+    .iv-controls {
+        gap: 0.75rem;
+    }
+
+    .btn-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+    }
+
+    .iv-card {
+        padding: 1.25rem 1rem;
+    }
+}

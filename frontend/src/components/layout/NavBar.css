@@ -227,7 +227,33 @@
 @media (max-width: 1024px) {
   .nav-links { display: none; }
   .mobile-menu-button { display: block; }
-  .nav-content { padding: 0 1.5rem; }
+  .auth-links { display: none; }
+  .nav-content { padding: 0 1.25rem; }
+}
+
+@media (max-width: 768px) {
+  .nav-content { padding: 0 1rem; }
+
+  .logo-title { font-size: 1.3rem; }
+  .logo-subtitle { display: none; }
+
+  .mobile-menu {
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .mobile-menu .nav-link {
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-content { padding: 0 0.875rem; }
+  .logo-icon { font-size: 1.6rem; }
+  .logo-title { font-size: 1.2rem; }
 }
 
 @media (min-width: 1025px) {

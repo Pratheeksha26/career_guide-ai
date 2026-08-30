@@ -440,6 +440,11 @@ html {
         --header-height: 60px;
     }
 
+    html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
     .nav-links {
         display: none;
     }
@@ -465,6 +470,8 @@ html {
         flex-direction: column;
         gap: 0.5rem;
         z-index: 999;
+        max-height: calc(100vh - var(--header-height));
+        overflow-y: auto;
     }
 
     .container {
@@ -473,6 +480,46 @@ html {
 
     .grid-container {
         grid-template-columns: 1fr;
+    }
+
+    /* Shrink floating action button on mobile */
+    .fab {
+        bottom: 1.25rem;
+        right: 1.25rem;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+
+    .fab-text {
+        font-size: 0.85rem;
+    }
+
+    .content-wrapper {
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --header-height: 56px;
+    }
+
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .fab {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .fab-text {
+        display: none; /* icon-only on very small screens */
+    }
+
+    .content-wrapper {
+        padding: 0 0.875rem;
     }
 }
 

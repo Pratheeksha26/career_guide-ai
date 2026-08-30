@@ -26,10 +26,11 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [chatSessions, setChatSessions] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [pendingFiles, setPendingFiles] = useState([]);
+  const isMobile = () => window.innerWidth <= 768;
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -68,11 +69,14 @@ const Chatbot = () => {
         setMessages(sessionMessages);
         setPendingFiles([]);
         setInput('');
+        // Auto-close sidebar on mobile after selecting a session
+        if (isMobile()) setSidebarOpen(false);
       }
     } catch (error) {
       console.error('Failed to load session:', error);
       setActiveSession(sessionId);
       setMessages([INITIAL_MESSAGE]);
+      if (isMobile()) setSidebarOpen(false);
     }
   };
 
@@ -81,6 +85,8 @@ const Chatbot = () => {
     setActiveSession(null);
     setPendingFiles([]);
     setInput('');
+    // Auto-close sidebar on mobile after creating a new session
+    if (isMobile()) setSidebarOpen(false);
   };
 
   const deleteSession = async (sessionId, e) => {
@@ -246,18 +252,25 @@ const Chatbot = () => {
       </div>
 
       <div className="chatbot-body">
-        {sidebarOpen && (
-          <div className="chatbot-sidebar-panel">
-            <ChatSidebar
-              sessions={chatSessions}
-              activeSession={activeSession}
-              onNewChat={createNewSession}
-              onLoadSession={loadSession}
-              onDeleteSession={deleteSession}
-              onClose={() => setSidebarOpen(false)}
-            />
-          </div>
+        {/* Mobile backdrop — clicking closes sidebar */}
+        {sidebarOpen && isMobile() && (
+          <div
+            className="chatbot-sidebar-backdrop"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
+
+        {/* Sidebar: always rendered, CSS handles slide-in/out on mobile */}
+        <div className={`chatbot-sidebar-panel ${sidebarOpen ? 'sidebar-open' : ''}`}>
+          <ChatSidebar
+            sessions={chatSessions}
+            activeSession={activeSession}
+            onNewChat={createNewSession}
+            onLoadSession={loadSession}
+            onDeleteSession={deleteSession}
+            onClose={() => setSidebarOpen(false)}
+          />
+        </div>
 
         <div className="chatbot-chat-area">
           <div className="chatbot-messages">

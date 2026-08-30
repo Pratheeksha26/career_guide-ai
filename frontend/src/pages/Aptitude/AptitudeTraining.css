@@ -433,3 +433,150 @@
 .apt-tip-item:last-child {
     border-bottom: none;
 }
+
+/* ==============================
+   Mobile Responsive
+   ============================== */
+@media (max-width: 768px) {
+    .apt-container {
+        padding: 2rem 1.25rem;
+    }
+
+    .apt-header {
+        margin-bottom: 2rem;
+    }
+
+    .apt-title {
+        font-size: 2.2rem;
+    }
+
+    .apt-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .apt-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .apt-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .apt-section-title {
+        font-size: 1.5rem;
+    }
+
+    .apt-topic-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .apt-topic-btn {
+        padding: 1.25rem 1rem;
+        font-size: 1rem;
+    }
+
+    .apt-topic-icon {
+        font-size: 2rem;
+    }
+
+    .apt-diff-btn {
+        padding: 0.75rem 2rem;
+        font-size: 0.95rem;
+    }
+
+    .apt-stats {
+        gap: 1rem;
+        flex-direction: column;
+    }
+
+    .apt-stat {
+        min-width: unset;
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .apt-question-card {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .apt-q-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .apt-q-text {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .apt-option {
+        padding: 1rem 1.25rem;
+        gap: 1rem;
+    }
+
+    .apt-option span {
+        font-size: 1.05rem;
+    }
+
+    .apt-actions {
+        flex-direction: column;
+        gap: 0.875rem;
+    }
+
+    .apt-start-card {
+        padding: 3rem 1.5rem;
+    }
+
+    .apt-start-icon {
+        font-size: 3.5rem;
+    }
+
+    .apt-start-btn {
+        padding: 1.1rem 3rem;
+        font-size: 1.1rem;
+        margin-top: 2rem;
+    }
+
+    .apt-tips-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .apt-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .apt-title {
+        font-size: 1.9rem;
+    }
+
+    .apt-content {
+        padding: 1.25rem 0.875rem;
+    }
+
+    .apt-topic-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .apt-topic-btn {
+        padding: 1rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .apt-q-text {
+        font-size: 1.1rem;
+    }
+
+    .apt-start-btn {
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+        width: 100%;
+    }
+}

@@ -269,3 +269,49 @@
   padding: 2rem 0;
   line-height: 1.6;
 }
+
+/* ==============================
+   Mobile Responsive
+   ============================== */
+@media (max-width: 768px) {
+  .csb-header {
+    padding: 1.25rem 1rem;
+  }
+
+  .csb-new-btn {
+    padding: 0.875rem;
+    font-size: 0.95rem;
+  }
+
+  .csb-session-title {
+    font-size: 0.9rem;
+  }
+
+  .csb-list-section {
+    padding: 0.5rem 0;
+  }
+
+  .csb-session-item {
+    padding: 0.65rem 0.875rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .csb-footer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .csb-header {
+    padding: 1rem;
+  }
+
+  .csb-new-btn {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .csb-session-title {
+    font-size: 0.85rem;
+  }
+}
