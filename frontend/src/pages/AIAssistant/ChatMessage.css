@@ -293,3 +293,85 @@
 .cmsg-bubble-user .cmsg-action-btn:hover {
   color: var(--white);
 }
+
+/* ==========================================
+   Markdown Table Styles (Earthy & Clean Theme)
+   ========================================== */
+.cmsg-text table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  border: 1px solid rgba(74, 93, 78, 0.15); /* Primary theme border */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.cmsg-text th {
+  background-color: var(--primary); /* Earthy green theme */
+  color: var(--white) !important;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid rgba(74, 93, 78, 0.25);
+  text-align: left;
+}
+
+.cmsg-text td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(74, 93, 78, 0.08);
+  color: var(--umber);
+  background-color: var(--white);
+}
+
+.cmsg-text tr:last-child td {
+  border-bottom: none;
+}
+
+/* Zebra Striping */
+.cmsg-text tr:nth-child(even) td {
+  background-color: rgba(74, 93, 78, 0.02);
+}
+
+/* Hover effect */
+.cmsg-text tr:hover td {
+  background-color: rgba(74, 93, 78, 0.05);
+}
+
+/* User Message Bubble Overrides (if user message contains tables) */
+.cmsg-bubble-user .cmsg-text table {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.cmsg-bubble-user .cmsg-text th {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: var(--white) !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.cmsg-bubble-user .cmsg-text td {
+  background-color: transparent;
+  color: var(--white) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.cmsg-bubble-user .cmsg-text tr:nth-child(even) td {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.cmsg-bubble-user .cmsg-text tr:hover td {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile responsive scrolling for tables */
+@media (max-width: 768px) {
+  .cmsg-text table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+

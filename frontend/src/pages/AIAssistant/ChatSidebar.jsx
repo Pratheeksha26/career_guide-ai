@@ -32,20 +32,13 @@ const ChatSidebar = ({ sessions, activeSession, onNewChat, onLoadSession, onDele
         {sessions.map((session) => (
           <div
             key={session._id}
-            className={`csb-session-item ${activeSession === session._id ? 'csb-session-active' : ''}`}
+            className={`csb-session-item ${activeSession === session._id ? 'active' : ''}`}
             onClick={() => onLoadSession(session._id)}
           >
             <div className="csb-session-info">
-              <div className="csb-session-title">{session.title || 'New Chat'}</div>
-              <div className="csb-session-meta">
-                <span className="csb-session-date">
-                  {new Date(session.updatedAt).toLocaleDateString()}
-                </span>
-                <span className="csb-session-count">{session.messageCount || 0} msgs</span>
+              <div className="csb-session-title" title={session.title || 'New Chat'}>
+                {session.title || 'New Chat'}
               </div>
-              {session.lastMessage && (
-                <div className="csb-session-preview">{stripMarkdown(session.lastMessage)}</div>
-              )}
             </div>
             <button
               onClick={(e) => onDeleteSession(session._id, e)}

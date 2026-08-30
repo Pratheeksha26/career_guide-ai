@@ -137,8 +137,8 @@
 
 /* Individual Session Item */
 .csb-session-item {
-    padding: 1rem;
-    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
     background: var(--white);
     border-radius: var(--radius-md);
     border: 1px solid rgba(74, 93, 78, 0.05);
@@ -184,13 +184,19 @@
 
 .csb-session-title {
     font-family: 'Lora', serif;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--umber);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.csb-session-info {
+    flex: 1;
+    min-width: 0;
+    padding-right: 1.8rem;
 }
 
 .csb-session-meta {
