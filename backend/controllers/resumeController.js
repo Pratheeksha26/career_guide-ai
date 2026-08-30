@@ -32,24 +32,28 @@ exports.analyzeResume = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Could not extract sufficient text from resume.' });
         }
 
-        const prompt = `Analyze this resume text for ATS (Applicant Tracking System) compatibility.
-        Provide a detailed evaluation including:
-        1. An overall ATS Score (out of 100).
-        2. Pros: List 3-5 things that are well-optimized.
-        3. Cons: List 3-5 areas that need improvement.
-        4. Key keywords found and missing keywords.
-        5. Detailed recommendation for improvement.
+        const prompt = `You are an expert ATS (Applicant Tracking System) optimizer and professional resume reviewer.
+        Analyze the following raw resume text extracted from a PDF/DOCX file and provide an accurate, highly specific compatibility critique.
+        
+        Strict Guidelines for Analysis:
+        1. Base your critique strictly on the provided text. Do not make generic recommendations or assumptions.
+        2. Before stating that a section, heading, or format is missing, verify if similar headings or content are present (e.g., "Internship Experience", "Project", "Skills", "Certification", "Achievement" are standard, valid headings; bullet point symbols like "•", "o", "-", and "*" indicate bullet formatting is present).
+        3. Identify specific technical and industry-relevant keywords that are *already present* in the text, and suggest specific missing keywords that would genuinely strengthen their targeted career path (e.g. Data Science, Web Development, etc.) based on their projects.
+        4. Focus on content clarity, keyword optimization, section completeness (e.g., presence of a professional summary), and formatting clarity.
+        5. Do not critique visual aspects like margins, fonts, colors, or page count layout since you are analyzing raw extracted text, not the visual document.
 
-        Resume Text:
+        Resume Text to Analyze:
+        ---
         ${resumeText}
+        ---
 
-        Respond ONLY in a clean JSON format (no backticks or extra text) with the following structure:
+        Respond ONLY in a clean JSON format (no backticks, markdown code blocks, or extra conversational text) with the following structure:
         {
           "score": number,
-          "pros": ["string"],
-          "cons": ["string"],
-          "keywords": { "found": ["string"], "missing": ["string"] },
-          "recommendation": "string"
+          "pros": ["specific strength 1", "specific strength 2", ...],
+          "cons": ["specific area for improvement 1", "specific area for improvement 2", ...],
+          "keywords": { "found": ["found keyword 1", ...], "missing": ["highly relevant missing keyword 1", ...] },
+          "recommendation": "detailed actionable recommendation for improvements"
         }`;
 
         const aiResponse = await groqService.getResponse(prompt);
