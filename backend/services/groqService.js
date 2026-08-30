@@ -25,6 +25,7 @@ class GroqService {
         - Interview Strategies (Technical, Behavioral, HR)
         - Skill Acquisition Roadmaps
         - Global Study Opportunities & Scholarships
+        - Good project ideas and tech tools for students
         
         Always aim to exceed expectations with the richness of your information.`;
     }
@@ -39,7 +40,7 @@ class GroqService {
 
             const completion = await this.groq.chat.completions.create({
                 messages: messages,
-                model: 'llama-3.3-70b-versatile',
+                model: process.env.GROQ_MODEL || 'groq/compound',
                 temperature: 0.8,
                 max_tokens: 3000,
                 top_p: 1,
